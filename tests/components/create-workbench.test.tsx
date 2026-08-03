@@ -75,6 +75,27 @@ describe("CreateWorkbench", () => {
     );
   });
 
+  it("switches card themes without identifying the object again", async () => {
+    const user = userEvent.setup();
+    const identify = vi.fn(async () => analysis);
+    render(<CreateWorkbench identify={identify} />);
+
+    await user.type(screen.getByLabelText("世界观"), worldview);
+    await user.upload(
+      screen.getByLabelText("上传现实物品照片"),
+      new File([new Uint8Array([137, 80, 78, 71])], "power-bank.png", { type: "image/png" }),
+    );
+    await user.click(screen.getByRole("button", { name: "开始鉴定" }));
+
+    const card = await screen.findByRole("article", { name: `${analysis.artifactName}遗物档案` });
+    expect(card).toHaveAttribute("data-theme", "dark-fantasy");
+
+    await user.click(screen.getByRole("button", { name: /复古科幻/ }));
+    expect(card).toHaveAttribute("data-theme", "retro-sci-fi");
+    expect(screen.getByText(analysis.description)).toBeVisible();
+    expect(identify).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects unsupported files before identification", async () => {
     const user = userEvent.setup({ applyAccept: false });
     const identify = vi.fn(async () => analysis);

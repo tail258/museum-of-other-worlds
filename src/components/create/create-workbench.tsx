@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 
 import { ArtifactCard } from "@/components/artifact/artifact-card";
+import { ThemePicker } from "@/components/artifact/theme-picker";
 import { identifyArtifact } from "@/features/artifacts/client-api";
 import type { ArtifactAnalysis } from "@/features/artifacts/artifact-schema";
-import type { ArtifactDraft, IdentifyClientInput } from "@/features/artifacts/artifact-types";
+import type { ArtifactDraft, ArtifactTheme, IdentifyClientInput } from "@/features/artifacts/artifact-types";
 import type { WorldStoreStatus } from "@/features/worlds/world-store";
 
 import { ImageDropzone } from "./image-dropzone";
@@ -26,6 +27,7 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
   const [draft, setDraft] = useState<ArtifactDraft | null>(null);
+  const [theme, setTheme] = useState<ArtifactTheme>("dark-fantasy");
   const [error, setError] = useState<string | null>(null);
   const [isIdentifying, setIsIdentifying] = useState(false);
 
@@ -64,7 +66,7 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
       const analysis = await identify({ image: sourceFile, worldview: worldview.trim() });
       setDraft({
         analysis,
-        theme: "dark-fantasy",
+        theme,
         worldview: worldview.trim(),
         sourceUrl: sourceUrl!,
         sourceFile,
@@ -75,6 +77,11 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
     } finally {
       setIsIdentifying(false);
     }
+  }
+
+  function selectTheme(nextTheme: ArtifactTheme) {
+    setTheme(nextTheme);
+    setDraft((current) => current ? { ...current, theme: nextTheme } : current);
   }
 
   const actionLabel = isIdentifying
@@ -125,9 +132,10 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
         <div className="theme-preview" aria-label="当前视觉主题">
           <span className="field-index" aria-hidden="true">02</span>
           <span>
-            <strong>黑暗幻想</strong>
+            <strong>视觉主题</strong>
             <small>生成后可自由切换，不会再次调用模型</small>
           </span>
+          <ThemePicker value={theme} onChange={selectTheme} compact />
         </div>
 
         <ImageDropzone file={sourceFile} previewUrl={sourceUrl} onSelect={selectImage} />
