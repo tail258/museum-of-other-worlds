@@ -2,7 +2,10 @@ import {
   SUPPORTED_IMAGE_TYPES,
   type SupportedImageType,
 } from "@/features/providers/ai-provider";
-import { MockAIProvider } from "@/features/providers/mock-ai-provider";
+import {
+  createAIProvider,
+  ProviderConfigurationError,
+} from "@/features/providers/provider-factory";
 import {
   ArtifactResponseError,
   runIdentification,
@@ -41,7 +44,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const artifact = await runIdentification(new MockAIProvider(), {
+    const artifact = await runIdentification(createAIProvider(), {
       image: new Uint8Array(await image.arrayBuffer()),
       mediaType: image.type,
       worldview: worldview.trim(),
@@ -50,6 +53,10 @@ export async function POST(request: Request): Promise<Response> {
 
     return Response.json({ artifact });
   } catch (error) {
+    if (error instanceof ProviderConfigurationError) {
+      return errorResponse(500, "AI_CONFIGURATION_ERROR", error.message);
+    }
+
     if (error instanceof ArtifactResponseError) {
       return errorResponse(502, "INVALID_AI_RESPONSE", error.message);
     }
