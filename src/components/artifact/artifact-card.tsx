@@ -6,14 +6,16 @@ type ArtifactCardProps = {
   sourceUrl: string;
   theme: ArtifactTheme;
   className?: string;
+  cardRef?: Ref<HTMLElement>;
 };
 
-export function ArtifactCard({ analysis, sourceUrl, theme, className }: ArtifactCardProps) {
+export function ArtifactCard({ analysis, sourceUrl, theme, className, cardRef }: ArtifactCardProps) {
   return (
     <article
       aria-label={`${analysis.artifactName}遗物档案`}
       className={["artifact-card", className].filter(Boolean).join(" ")}
       data-theme={theme}
+      ref={cardRef}
     >
       <div className="artifact-card__register" aria-hidden="true">
         OWB / VERIFIED SPECIMEN
@@ -57,3 +59,4 @@ export function ArtifactCard({ analysis, sourceUrl, theme, className }: Artifact
     </article>
   );
 }
+import type { Ref } from "react";

@@ -753,6 +753,51 @@ select:focus-visible {
   line-height: 1.8;
 }
 
+.artifact-output {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 780px;
+  width: 100%;
+}
+
+.artifact-actions {
+  align-items: center;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
+
+.artifact-actions button {
+  background: var(--bone);
+  border: 1px solid var(--bone);
+  border-radius: 0;
+  color: var(--void);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  min-width: 124px;
+  padding: 11px 15px;
+}
+
+.artifact-actions button:hover:not(:disabled) {
+  background: var(--brass);
+  border-color: var(--brass);
+}
+
+.artifact-actions button:disabled {
+  cursor: progress;
+  opacity: .58;
+}
+
+.artifact-actions p {
+  color: var(--ash);
+  font-size: 10px;
+  margin: 0;
+}
+
 .artifact-card {
   --card-bg: #191817;
   --card-ink: #ded5c3;

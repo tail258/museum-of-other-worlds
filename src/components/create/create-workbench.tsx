@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ArtifactCard } from "@/components/artifact/artifact-card";
 import { ThemePicker } from "@/components/artifact/theme-picker";
 import { identifyArtifact } from "@/features/artifacts/client-api";
+import { exportArtifactCard } from "@/features/artifacts/export-artifact-card";
 import type { ArtifactAnalysis } from "@/features/artifacts/artifact-schema";
 import type { ArtifactDraft, ArtifactTheme, IdentifyClientInput } from "@/features/artifacts/artifact-types";
 import type { WorldStoreStatus } from "@/features/worlds/world-store";
@@ -16,13 +17,20 @@ const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 type IdentifyFunction = (input: IdentifyClientInput) => Promise<ArtifactAnalysis>;
+type ExportFunction = (node: HTMLElement, artifactName: string) => Promise<string>;
 
 type CreateWorkbenchProps = {
   identify?: IdentifyFunction;
+  exportCard?: ExportFunction;
   loadWorldStore?: () => Promise<WorldStoreStatus>;
 };
 
-export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }: CreateWorkbenchProps) {
+export function CreateWorkbench({
+  identify = identifyArtifact,
+  exportCard = exportArtifactCard,
+  loadWorldStore,
+}: CreateWorkbenchProps) {
+  const cardRef = useRef<HTMLElement>(null);
   const [worldview, setWorldview] = useState("");
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
@@ -30,6 +38,8 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
   const [theme, setTheme] = useState<ArtifactTheme>("dark-fantasy");
   const [error, setError] = useState<string | null>(null);
   const [isIdentifying, setIsIdentifying] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -82,6 +92,20 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
   function selectTheme(nextTheme: ArtifactTheme) {
     setTheme(nextTheme);
     setDraft((current) => current ? { ...current, theme: nextTheme } : current);
+  }
+
+  async function downloadCard() {
+    if (!cardRef.current || !draft) return;
+    setExportMessage(null);
+    setIsExporting(true);
+    try {
+      await exportCard(cardRef.current, draft.analysis.artifactName);
+      setExportMessage("PNG 已保存到下载目录。");
+    } catch (caught) {
+      setExportMessage(caught instanceof Error ? caught.message : "PNG 导出失败，请稍后重试。");
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   const actionLabel = isIdentifying
@@ -157,11 +181,22 @@ export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }:
 
       <div className="create-workbench__preview" aria-live="polite">
         {draft ? (
-          <ArtifactCard
-            analysis={draft.analysis}
-            sourceUrl={draft.sourceUrl}
-            theme={draft.theme}
-          />
+          <div className="artifact-output">
+            <ArtifactCard
+              analysis={draft.analysis}
+              sourceUrl={draft.sourceUrl}
+              theme={draft.theme}
+              cardRef={cardRef}
+            />
+            <div className="artifact-actions">
+              <button type="button" disabled={isExporting} onClick={downloadCard}>
+                {isExporting ? "正在生成 PNG…" : "下载 PNG"}
+              </button>
+              {exportMessage ? (
+                <p role="status" aria-label="导出状态">{exportMessage}</p>
+              ) : null}
+            </div>
+          </div>
         ) : (
           <div className="empty-artifact">
             <span aria-hidden="true">∅</span>
