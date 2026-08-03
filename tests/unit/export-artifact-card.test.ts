@@ -13,7 +13,7 @@ describe("exportArtifactCard", () => {
 
     expect(renderer).toHaveBeenCalledWith(
       node,
-      expect.objectContaining({ pixelRatio: 2, cacheBust: true }),
+      expect.objectContaining({ pixelRatio: 2, cacheBust: false }),
     );
     expect(download).toHaveBeenCalledWith("data:image/png;base64,card", "衰雷-余烬匣.png");
     expect(filename).toBe("衰雷-余烬匣.png");

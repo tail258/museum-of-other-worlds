@@ -48,7 +48,7 @@ export async function exportArtifactCard(
     const backgroundColor = getComputedStyle(node).backgroundColor || "#191817";
     const dataUrl = await (dependencies.renderer ?? defaultRenderer)(node, {
       backgroundColor,
-      cacheBust: true,
+      cacheBust: false,
       pixelRatio: 2,
     });
     const filename = safeFilename(artifactName);
