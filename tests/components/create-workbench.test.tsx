@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CreateWorkbench } from "@/components/create/create-workbench";
+import { MemoryWorldStore } from "@/features/worlds/world-store";
 
 const worldview = "诸神陨落后，雷霆被视为神血。灰冠祭司负责回收仍带电的旧时代器物并登记其危险等级。";
 const analysis = {
@@ -28,6 +29,30 @@ afterEach(() => {
 });
 
 describe("CreateWorkbench", () => {
+  it("loads a selected local worldview into the editable prompt", async () => {
+    const user = userEvent.setup();
+    const store = new MemoryWorldStore();
+    await store.save({
+      id: "saved-world",
+      name: "雾钟公国",
+      prompt: "雾钟每次鸣响都会抹去一段历史，城中的档案员以失窃的日用品重建被删除的年代。",
+    });
+    render(
+      <CreateWorkbench
+        loadWorldStore={async () => ({ store, persistent: true })}
+      />,
+    );
+
+    await user.selectOptions(
+      await screen.findByLabelText("从本地世界观库选择"),
+      "saved-world",
+    );
+
+    expect(screen.getByLabelText("世界观")).toHaveValue(
+      "雾钟每次鸣响都会抹去一段历史，城中的档案员以失窃的日用品重建被删除的年代。",
+    );
+  });
+
   it("keeps the source image visible after identifying an artifact", async () => {
     const user = userEvent.setup();
     const identify = vi.fn(async () => analysis);

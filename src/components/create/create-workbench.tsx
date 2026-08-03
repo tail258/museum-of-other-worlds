@@ -6,8 +6,10 @@ import { ArtifactCard } from "@/components/artifact/artifact-card";
 import { identifyArtifact } from "@/features/artifacts/client-api";
 import type { ArtifactAnalysis } from "@/features/artifacts/artifact-schema";
 import type { ArtifactDraft, IdentifyClientInput } from "@/features/artifacts/artifact-types";
+import type { WorldStoreStatus } from "@/features/worlds/world-store";
 
 import { ImageDropzone } from "./image-dropzone";
+import { WorldSelector } from "./world-selector";
 
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -16,9 +18,10 @@ type IdentifyFunction = (input: IdentifyClientInput) => Promise<ArtifactAnalysis
 
 type CreateWorkbenchProps = {
   identify?: IdentifyFunction;
+  loadWorldStore?: () => Promise<WorldStoreStatus>;
 };
 
-export function CreateWorkbench({ identify = identifyArtifact }: CreateWorkbenchProps) {
+export function CreateWorkbench({ identify = identifyArtifact, loadWorldStore }: CreateWorkbenchProps) {
   const [worldview, setWorldview] = useState("");
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
@@ -99,6 +102,13 @@ export function CreateWorkbench({ identify = identifyArtifact }: CreateWorkbench
           <small id="worldview-help" className="field-help">
             20–1200 字，现有 IP 将被抽象为原创设定
           </small>
+          <WorldSelector
+            onSelect={(world) => {
+              setWorldview(world.prompt);
+              setError(null);
+            }}
+            loadStore={loadWorldStore}
+          />
           <textarea
             id="worldview"
             value={worldview}
