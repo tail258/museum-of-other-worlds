@@ -16,3 +16,13 @@ export type IdentifyClientInput = {
   worldview: string;
   demoId?: string;
 };
+
+export type PublishArtifactInput = Pick<
+  ArtifactDraft,
+  "analysis" | "theme" | "worldview" | "sourceFile"
+>;
+
+export type PublishArtifactResult = {
+  id: string;
+  url: string;
+};

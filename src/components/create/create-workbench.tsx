@@ -4,10 +4,16 @@ import { useEffect, useRef, useState } from "react";
 
 import { ArtifactCard } from "@/components/artifact/artifact-card";
 import { ThemePicker } from "@/components/artifact/theme-picker";
-import { identifyArtifact } from "@/features/artifacts/client-api";
+import { identifyArtifact, publishArtifact } from "@/features/artifacts/client-api";
 import { exportArtifactCard } from "@/features/artifacts/export-artifact-card";
 import type { ArtifactAnalysis } from "@/features/artifacts/artifact-schema";
-import type { ArtifactDraft, ArtifactTheme, IdentifyClientInput } from "@/features/artifacts/artifact-types";
+import type {
+  ArtifactDraft,
+  ArtifactTheme,
+  IdentifyClientInput,
+  PublishArtifactInput,
+  PublishArtifactResult,
+} from "@/features/artifacts/artifact-types";
 import type { WorldStoreStatus } from "@/features/worlds/world-store";
 
 import { ImageDropzone } from "./image-dropzone";
@@ -18,16 +24,19 @@ const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 type IdentifyFunction = (input: IdentifyClientInput) => Promise<ArtifactAnalysis>;
 type ExportFunction = (node: HTMLElement, artifactName: string) => Promise<string>;
+type PublishFunction = (input: PublishArtifactInput) => Promise<PublishArtifactResult>;
 
 type CreateWorkbenchProps = {
   identify?: IdentifyFunction;
   exportCard?: ExportFunction;
+  publish?: PublishFunction;
   loadWorldStore?: () => Promise<WorldStoreStatus>;
 };
 
 export function CreateWorkbench({
   identify = identifyArtifact,
   exportCard = exportArtifactCard,
+  publish = publishArtifact,
   loadWorldStore,
 }: CreateWorkbenchProps) {
   const cardRef = useRef<HTMLElement>(null);
@@ -40,6 +49,9 @@ export function CreateWorkbench({
   const [isIdentifying, setIsIdentifying] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportMessage, setExportMessage] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
 
   useEffect(() => {
     return () => {
@@ -62,6 +74,7 @@ export function CreateWorkbench({
     setSourceFile(file);
     setSourceUrl(URL.createObjectURL(file));
     setDraft(null);
+    setShareUrl(null);
   }
 
   async function submitIdentification() {
@@ -71,6 +84,8 @@ export function CreateWorkbench({
     }
 
     setError(null);
+    setShareUrl(null);
+    setPublishError(null);
     setIsIdentifying(true);
     try {
       const analysis = await identify({ image: sourceFile, worldview: worldview.trim() });
@@ -92,6 +107,26 @@ export function CreateWorkbench({
   function selectTheme(nextTheme: ArtifactTheme) {
     setTheme(nextTheme);
     setDraft((current) => current ? { ...current, theme: nextTheme } : current);
+    setShareUrl(null);
+  }
+
+  async function publishCard() {
+    if (!draft) return;
+    setIsPublishing(true);
+    setPublishError(null);
+    try {
+      const result = await publish({
+        analysis: draft.analysis,
+        theme: draft.theme,
+        worldview: draft.worldview,
+        sourceFile: draft.sourceFile,
+      });
+      setShareUrl(result.url);
+    } catch (caught) {
+      setPublishError(caught instanceof Error ? caught.message : "发布失败，请稍后重试。");
+    } finally {
+      setIsPublishing(false);
+    }
   }
 
   async function downloadCard() {
@@ -192,8 +227,15 @@ export function CreateWorkbench({
               <button type="button" disabled={isExporting} onClick={downloadCard}>
                 {isExporting ? "正在生成 PNG…" : "下载 PNG"}
               </button>
+              <button type="button" disabled={isPublishing} onClick={publishCard}>
+                {isPublishing ? "正在发布…" : "发布分享"}
+              </button>
               {exportMessage ? (
                 <p role="status" aria-label="导出状态">{exportMessage}</p>
+              ) : null}
+              {publishError ? <p role="alert">{publishError}</p> : null}
+              {shareUrl ? (
+                <a href={shareUrl} target="_blank" rel="noreferrer">打开公开链接</a>
               ) : null}
             </div>
           </div>

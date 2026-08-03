@@ -113,6 +113,29 @@ describe("CreateWorkbench", () => {
     expect(await screen.findByRole("status", { name: "导出状态" })).toHaveTextContent("PNG 已保存");
   });
 
+  it("publishes the source only after the user selects public sharing", async () => {
+    const user = userEvent.setup();
+    const publish = vi.fn(async () => ({
+      id: "f5072b90-b778-4e5a-9ff8-35af461dc27a",
+      url: "https://museum.example/artifact/f5072b90-b778-4e5a-9ff8-35af461dc27a",
+    }));
+    render(<CreateWorkbench identify={async () => analysis} publish={publish} />);
+
+    await user.type(screen.getByLabelText("世界观"), worldview);
+    const source = new File([new Uint8Array([137, 80, 78, 71])], "power-bank.png", { type: "image/png" });
+    await user.upload(screen.getByLabelText("上传现实物品照片"), source);
+    await user.click(screen.getByRole("button", { name: "开始鉴定" }));
+
+    expect(publish).not.toHaveBeenCalled();
+    await user.click(await screen.findByRole("button", { name: "发布分享" }));
+
+    expect(publish).toHaveBeenCalledWith(expect.objectContaining({ sourceFile: source, analysis }));
+    expect(await screen.findByRole("link", { name: "打开公开链接" })).toHaveAttribute(
+      "href",
+      "https://museum.example/artifact/f5072b90-b778-4e5a-9ff8-35af461dc27a",
+    );
+  });
+
   it("rejects unsupported files before identification", async () => {
     const user = userEvent.setup({ applyAccept: false });
     const identify = vi.fn(async () => analysis);

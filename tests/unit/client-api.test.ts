@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   identifyArtifact,
   IdentifyRequestError,
+  publishArtifact,
 } from "@/features/artifacts/client-api";
 
 const analysis = {
@@ -56,5 +57,31 @@ describe("identifyArtifact", () => {
       code: "AI_UNAVAILABLE",
       message: "鉴定服务暂时不可用",
     });
+  });
+});
+
+describe("publishArtifact", () => {
+  it("uploads the source and record only when explicitly called", async () => {
+    const fetchSpy = vi.fn<typeof fetch>(async () => Response.json(
+      { id: "f5072b90-b778-4e5a-9ff8-35af461dc27a", url: "https://museum.example/artifact/f5072b90-b778-4e5a-9ff8-35af461dc27a" },
+      { status: 201 },
+    ));
+    vi.stubGlobal("fetch", fetchSpy);
+    const image = new File(["image"], "item.webp", { type: "image/webp" });
+
+    await expect(publishArtifact({
+      analysis,
+      theme: "retro-sci-fi",
+      worldview: "旧海退去之后，港城的门不再通往房间，而通往被潮汐遗忘的年份。",
+      sourceFile: image,
+    })).resolves.toMatchObject({ url: expect.stringContaining("/artifact/") });
+
+    const [url, init] = fetchSpy.mock.calls[0];
+    const body = init?.body as FormData;
+    expect(url).toBe("/api/artifacts");
+    expect(init?.method).toBe("POST");
+    expect(body.get("image")).toBe(image);
+    expect(body.get("theme")).toBe("retro-sci-fi");
+    expect(JSON.parse(String(body.get("analysis")))).toMatchObject({ artifactName: "衰雷余烬匣" });
   });
 });

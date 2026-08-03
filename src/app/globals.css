@@ -798,6 +798,91 @@ select:focus-visible {
   margin: 0;
 }
 
+.artifact-actions a {
+  border-bottom: 1px solid var(--brass);
+  color: var(--bone);
+  font-size: 10px;
+  padding: 7px 0;
+}
+
+.public-artifact {
+  display: grid;
+  grid-template-columns: minmax(280px, .55fr) minmax(600px, 1.45fr);
+  min-height: calc(100vh - 72px);
+}
+
+.public-artifact > aside {
+  border-right: 1px solid var(--hairline);
+  padding: clamp(42px, 6vw, 90px) clamp(28px, 5vw, 72px);
+}
+
+.public-artifact > aside > span {
+  color: var(--brass);
+  font-family: var(--font-utility);
+  font-size: 9px;
+  letter-spacing: .14em;
+}
+
+.public-artifact > aside h1 {
+  font-family: var(--font-display);
+  font-size: clamp(42px, 5vw, 70px);
+  font-weight: 400;
+  margin: 42px 0 22px;
+}
+
+.public-artifact > aside > p {
+  color: var(--ash);
+  font-size: 12px;
+  line-height: 1.9;
+  margin: 0;
+  max-width: 360px;
+}
+
+.public-artifact > aside dl {
+  border-top: 1px solid var(--hairline);
+  margin: 48px 0 55px;
+}
+
+.public-artifact > aside dl > div {
+  border-bottom: 1px solid var(--hairline);
+  padding: 16px 0;
+}
+
+.public-artifact > aside dt {
+  color: var(--brass);
+  font-family: var(--font-utility);
+  font-size: 9px;
+  letter-spacing: .12em;
+}
+
+.public-artifact > aside dd {
+  color: var(--ash);
+  font-family: var(--font-display);
+  font-size: 12px;
+  margin: 8px 0 0;
+}
+
+.public-artifact > aside > a {
+  border-bottom: 1px solid var(--brass);
+  display: inline-block;
+  font-size: 12px;
+  letter-spacing: .08em;
+  padding: 11px 0;
+}
+
+.public-artifact__stage {
+  align-items: center;
+  background:
+    linear-gradient(90deg, transparent 49.9%, rgb(231 224 210 / 4%) 50%, transparent 50.1%),
+    linear-gradient(rgb(231 224 210 / 3%) 1px, transparent 1px),
+    var(--chamber);
+  background-size: 100% 100%, 100% 72px, auto;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  padding: clamp(30px, 6vw, 88px);
+}
+
 .artifact-card {
   --card-bg: #191817;
   --card-ink: #ded5c3;
@@ -1331,6 +1416,19 @@ select:focus-visible {
   .demo-gallery__stage {
     min-height: 780px;
   }
+
+  .public-artifact {
+    grid-template-columns: 1fr;
+  }
+
+  .public-artifact > aside {
+    border-bottom: 1px solid var(--hairline);
+    border-right: 0;
+  }
+
+  .public-artifact__stage {
+    min-height: 760px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1440,6 +1538,20 @@ select:focus-visible {
 
   .theme-picker button {
     min-height: 54px;
+  }
+
+  .artifact-actions {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .artifact-actions button {
+    flex: 1;
+  }
+
+  .public-artifact__stage {
+    min-height: 0;
+    padding: 34px 18px;
   }
 }
 

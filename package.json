@@ -14,11 +14,13 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1102.0",
     "dexie": "^4.4.4",
     "html-to-image": "^1.11.13",
     "next": "^16.2.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "sharp": "^0.35.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
