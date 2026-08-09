@@ -1,5 +1,4 @@
 <p align="center">
-  <img src="./docs/assets/theme-dark-fantasy.png" alt="异界遗物局：黑暗幻想主题遗物卡" width="100%" />
 </p>
 
 <h1 align="center">异界遗物局</h1>
